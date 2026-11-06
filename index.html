@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Before I Become Your Husband...</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #1a0a2e 0%, #2d1b4e 50%, #1a0a2e 100%);
+      font-family: 'Georgia', serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    /* Floating hearts */
+    .hearts-bg {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+    .heart-particle {
+      position: absolute;
+      bottom: -40px;
+      opacity: 0;
+      animation: floatUp linear infinite;
+    }
+    @keyframes floatUp {
+      0%   { transform: translateY(0) rotate(0deg); opacity: 0.6; }
+      100% { transform: translateY(-110vh) rotate(360deg); opacity: 0; }
+    }
+
+    /* ── Shared page shell ── */
+    .page {
+      display: none;
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      padding: 48px 30px;
+      max-width: 680px;
+      width: 92%;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .page.active { display: flex; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(28px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .page.active { animation: fadeIn 0.7s ease; }
+
+    /* ── PAGE 1 ── */
+    #page1 { min-height: 100vh; }
+
+    .rose-icon {
+      font-size: 3.5rem;
+      margin-bottom: 20px;
+      animation: pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50%       { transform: scale(1.15); }
+    }
+
+    .title-text {
+      font-size: clamp(1.8rem, 5vw, 2.8rem);
+      color: #f7d6e0;
+      font-style: italic;
+      line-height: 1.4;
+      min-height: 120px;
+      text-shadow: 0 0 20px rgba(255,182,193,0.4);
+    }
+    .cursor {
+      display: inline-block;
+      width: 3px; height: 1em;
+      background: #ff9eb5;
+      margin-left: 4px;
+      vertical-align: middle;
+      animation: blink 0.7s step-end infinite;
+    }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+    @keyframes shake {
+      0%,100% { transform: translateX(0); }
+      20%      { transform: translateX(-8px); }
+      40%      { transform: translateX(8px); }
+      60%      { transform: translateX(-6px); }
+      80%      { transform: translateX(6px); }
+    }
+    .shake { animation: shake 0.55s ease !important; }
+
+    .subtitle {
+      margin-top: 16px;
+      font-size: 1rem;
+      color: #c9a0c0;
+      font-style: italic;
+      opacity: 0;
+      transition: opacity 1s ease;
+    }
+    .subtitle.visible { opacity: 1; }
+
+    .divider {
+      width: 60px; height: 1px;
+      background: linear-gradient(to right, transparent, #ff9eb5, transparent);
+      margin: 16px auto;
+    }
+
+    .btn {
+      margin-top: 40px;
+      padding: 14px 40px;
+      font-size: 1rem;
+      font-family: 'Georgia', serif;
+      letter-spacing: 1px;
+      background: transparent;
+      color: #f7d6e0;
+      border: 2px solid #ff9eb5;
+      border-radius: 50px;
+      cursor: pointer;
+      opacity: 0;
+      transition: all 0.3s ease, opacity 0.8s ease;
+    }
+    .btn.visible { opacity: 1; }
+    .btn:hover {
+      background: rgba(255,158,181,0.2);
+      box-shadow: 0 0 20px rgba(255,158,181,0.4);
+      transform: translateY(-2px);
+    }
+
+    /* ── PAGE 2 — One question at a time ── */
+    #page2 { min-height: 100vh; }
+
+    /* Progress bar */
+    .progress-wrap {
+      width: 100%;
+      margin-bottom: 28px;
+    }
+    .progress-label {
+      font-size: 0.75rem;
+      color: #c9a0c0;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .progress-bar-bg {
+      width: 100%;
+      height: 4px;
+      background: rgba(255,158,181,0.15);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(to right, #ff6b9d, #ff9eb5);
+      border-radius: 2px;
+      transition: width 0.5s ease;
+    }
+
+    /* Question slide */
+    .q-slide {
+      width: 100%;
+    }
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(40px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes slideOut {
+      from { opacity: 1; transform: translateX(0); }
+      to   { opacity: 0; transform: translateX(-40px); }
+    }
+    .q-slide.entering { animation: slideIn 0.45s ease forwards; }
+    .q-slide.leaving  { animation: slideOut 0.35s ease forwards; }
+
+    .q-card {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,158,181,0.22);
+      border-radius: 20px;
+      padding: 28px 28px 24px;
+      text-align: left;
+    }
+
+    .q-label {
+      font-size: 0.7rem;
+      color: #ff9eb5;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .q-emoji { font-size: 1.1rem; text-transform: none; letter-spacing: 0; }
+
+    .q-text {
+      font-size: 1.1rem;
+      color: #f0e0ea;
+      line-height: 1.7;
+      margin-bottom: 20px;
+    }
+
+    /* Radio options */
+    .options { display: flex; flex-direction: column; gap: 10px; }
+
+    .option-label {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      padding: 11px 16px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,158,181,0.2);
+      background: rgba(255,255,255,0.03);
+      color: #e8ccd8;
+      font-size: 0.95rem;
+      transition: background 0.2s, border-color 0.2s;
+    }
+    .option-label:hover {
+      background: rgba(255,158,181,0.1);
+      border-color: rgba(255,158,181,0.45);
+    }
+    .option-label:has(input:checked) {
+      background: rgba(255,158,181,0.15);
+      border-color: rgba(255,158,181,0.6);
+    }
+    .option-label input[type="radio"] {
+      appearance: none;
+      width: 18px; height: 18px;
+      border: 2px solid #ff9eb5;
+      border-radius: 50%;
+      flex-shrink: 0;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .option-label input[type="radio"]:checked {
+      background: #ff9eb5;
+      box-shadow: 0 0 8px rgba(255,158,181,0.5);
+    }
+    .option-letter {
+      font-weight: bold;
+      color: #ff9eb5;
+      min-width: 20px;
+      font-size: 0.9rem;
+    }
+
+    /* Textarea */
+    textarea.q-input {
+      width: 100%;
+      min-height: 100px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,158,181,0.3);
+      border-radius: 12px;
+      color: #f0e0ea;
+      font-family: 'Georgia', serif;
+      font-size: 0.95rem;
+      padding: 14px 16px;
+      resize: vertical;
+      outline: none;
+      transition: border-color 0.3s, box-shadow 0.3s;
+      line-height: 1.6;
+    }
+    textarea.q-input::placeholder { color: #8a6070; font-style: italic; }
+    textarea.q-input:focus {
+      border-color: #ff9eb5;
+      box-shadow: 0 0 14px rgba(255,158,181,0.2);
+      background: rgba(255,255,255,0.09);
+    }
+
+    /* Nav row */
+    .nav-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 28px;
+      width: 100%;
+      gap: 12px;
+    }
+
+    .nav-btn {
+      padding: 12px 30px;
+      font-size: 0.95rem;
+      font-family: 'Georgia', serif;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      letter-spacing: 0.5px;
+    }
+
+    .nav-btn.back {
+      background: transparent;
+      color: #c9a0c0;
+      border: 1px solid rgba(255,158,181,0.25);
+    }
+    .nav-btn.back:hover {
+      background: rgba(255,158,181,0.08);
+      color: #f7d6e0;
+    }
+    .nav-btn.back:disabled { opacity: 0.3; cursor: default; }
+
+    .nav-btn.next {
+      background: linear-gradient(135deg, #ff6b9d, #ff9eb5);
+      color: #fff;
+      border: none;
+      box-shadow: 0 4px 18px rgba(255,107,157,0.35);
+      flex: 1;
+      max-width: 220px;
+    }
+    .nav-btn.next:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(255,107,157,0.5);
+    }
+
+    .nav-btn.submit {
+      background: linear-gradient(135deg, #ff6b9d, #ff9eb5);
+      color: #fff;
+      border: none;
+      box-shadow: 0 4px 18px rgba(255,107,157,0.35);
+      flex: 1;
+      max-width: 240px;
+    }
+    .nav-btn.submit:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(255,107,157,0.5);
+    }
+
+    /* ── PAGE 3 — Thank you ── */
+    #page3 { min-height: 100vh; }
+
+    .thankyou-icon {
+      font-size: 4rem;
+      margin-bottom: 20px;
+      animation: pulse 2s ease-in-out infinite;
+    }
+    .thankyou-title {
+      font-size: clamp(1.6rem, 4vw, 2.4rem);
+      color: #f7d6e0;
+      font-style: italic;
+      margin-bottom: 12px;
+      text-shadow: 0 0 20px rgba(255,182,193,0.4);
+    }
+    .thankyou-msg {
+      font-size: 1rem;
+      color: #c9a0c0;
+      line-height: 1.8;
+      max-width: 420px;
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="hearts-bg" id="heartsBg"></div>
+
+  <!-- PAGE 1 -->
+  <div class="page active" id="page1">
+    <div class="rose-icon">🌹</div>
+    <h1 class="title-text" id="typeTarget"></h1>
+    <div class="divider"></div>
+    <p class="subtitle" id="subtitle">There are a few things I need to know about you...</p>
+    <button class="btn" id="nextBtn" onclick="goToPage2()">Continue &rarr;</button>
+  </div>
+
+  <!-- PAGE 2 -->
+  <div class="page" id="page2">
+    <!-- Progress -->
+    <div class="progress-wrap">
+      <div class="progress-label" id="progressLabel">Question 1 of 8</div>
+      <div class="progress-bar-bg">
+        <div class="progress-bar-fill" id="progressFill" style="width:12.5%"></div>
+      </div>
+    </div>
+
+    <!-- Question area -->
+    <div id="questionArea" style="width:100%;"></div>
+
+    <!-- Nav -->
+    <div class="nav-row" id="navRow"></div>
+  </div>
+
+  <!-- PAGE 3 -->
+  <div class="page" id="page3">
+    <div class="thankyou-icon">💖</div>
+    <h2 class="thankyou-title">Thank you, my love</h2>
+    <div class="divider"></div>
+    <p class="thankyou-msg">
+      Your answers mean everything to me.<br><br>
+      I promise to remember every single word — and do my best to be the husband you truly deserve. 🌹
+    </p>
+  </div>
+
+  <script>
+    // ── Floating hearts ──────────────────────────────────────────────
+    // ── GitHub config — replace these values ─────────────────────────
+    const GITHUB_TOKEN  = 'YOUR_FINE_GRAINED_TOKEN'; // see setup instructions below
+    const GITHUB_OWNER  = 'YOUR_GITHUB_USERNAME';    // e.g. 'john'
+    const GITHUB_REPO   = 'YOUR_REPO_NAME';          // e.g. 'before-i-become'
+    const GITHUB_BRANCH = 'main';                    // or 'master'
+    // ─────────────────────────────────────────────────────────────────
+
+    // ── Floating hearts ──────────────────────────────────────────────
+    const heartEmojis = ['💖','💕','🌸','✨','💗','🌹','💓','💞'];
+    const bg = document.getElementById('heartsBg');
+
+    function spawnHeart() {
+      const el = document.createElement('span');
+      el.classList.add('heart-particle');
+      el.textContent = heartEmojis[Math.floor(Math.random() * heartEmojis.length)];
+      el.style.left = Math.random() * 100 + 'vw';
+      el.style.fontSize = (0.8 + Math.random() * 1.2) + 'rem';
+      const dur = 6 + Math.random() * 8;
+      el.style.animationDuration = dur + 's';
+      el.style.animationDelay = Math.random() * 3 + 's';
+      bg.appendChild(el);
+      setTimeout(() => el.remove(), (dur + 4) * 1000);
+    }
+    setInterval(spawnHeart, 700);
+
+    // ── Typewriter ───────────────────────────────────────────────────
+    const fullText = 'Before I become\nyour Husband...';
+    const target   = document.getElementById('typeTarget');
+    const subtitle = document.getElementById('subtitle');
+    const nextBtn  = document.getElementById('nextBtn');
+    let charIndex  = 0;
+
+    function startTypewriter() {
+      const cursorEl = document.createElement('span');
+      cursorEl.classList.add('cursor');
+      target.appendChild(cursorEl);
+
+      function type() {
+        if (charIndex < fullText.length) {
+          const char = fullText[charIndex];
+          char === '\n'
+            ? cursorEl.before(document.createElement('br'))
+            : cursorEl.before(document.createTextNode(char));
+          charIndex++;
+          setTimeout(type, char === '\n' ? 400 : 80 + Math.random() * 60);
+        } else {
+          setTimeout(() => {
+            subtitle.classList.add('visible');
+            nextBtn.classList.add('visible');
+          }, 500);
+        }
+      }
+      type();
+    }
+    window.addEventListener('load', () => setTimeout(startTypewriter, 600));
+
+    // ── Questions ────────────────────────────────────────────────────
+    const questions = [
+      {
+        emoji: '👑', label: 'Question 1',
+        text: 'What kind of Husband do you want?',
+        type: 'radio',
+        options: [
+          { letter: 'A', text: 'Romantic 💕' },
+          { letter: 'B', text: 'Protective 🛡️' },
+          { letter: 'C', text: 'Responsible 💼' },
+          { letter: 'D', text: 'All-around Partner 🤝' },
+        ]
+      },
+      {
+        emoji: '🏠', label: 'Question 2',
+        text: 'What should I do most at home?',
+        type: 'textarea',
+        placeholder: 'e.g. Cook meals, clean the house, do the laundry...'
+      },
+      {
+        emoji: '🌧️', label: 'Question 3',
+        text: "What's something you expect me to do on your bad days?",
+        type: 'textarea',
+        placeholder: 'Tell me how you want to be held, listened to, or cheered up...'
+      },
+      {
+        emoji: '💞', label: 'Question 4',
+        text: 'If there is a fight between us, what makes you forgive me?',
+        type: 'radio',
+        options: [
+          { letter: 'A', text: 'A Hug and Kiss 🤗💋' },
+          { letter: 'B', text: 'Bringing your favorite food (like Ice Cream) 🍦' },
+          { letter: 'C', text: 'Both 💖' },
+        ]
+      },
+      {
+        emoji: '🌟', label: 'Question 5',
+        text: "What's something you desire most from me?",
+        type: 'textarea',
+        placeholder: 'Your deepest desire from me as your husband...'
+      },
+      {
+        emoji: '💝', label: 'Question 6',
+        text: 'What makes you feel most loved by me?',
+        type: 'textarea',
+        placeholder: 'Words, touch, quality time, acts of service...'
+      },
+      {
+        emoji: '😊', label: 'Question 7',
+        text: 'What is one thing I could do more often to make you happy?',
+        type: 'textarea',
+        placeholder: 'Something small or big — I want to know...'
+      },
+      {
+        emoji: '🌙', label: 'Question 8',
+        text: "Whats something you wish we did more often or we should do more often?",
+        type: 'textarea',
+        placeholder: 'Date nights, trips, cooking together, just talking...'
+      },
+    ];
+
+    // Store answers
+    const answers = new Array(questions.length).fill('');
+    let currentQ  = 0;
+
+    // ── Render a question ────────────────────────────────────────────
+    function renderQuestion(index, direction) {
+      const q          = questions[index];
+      const area       = document.getElementById('questionArea');
+      const navRow     = document.getElementById('navRow');
+      const fillEl     = document.getElementById('progressFill');
+      const labelEl    = document.getElementById('progressLabel');
+      const total      = questions.length;
+
+      // Update progress
+      labelEl.textContent = `Question ${index + 1}`;
+      fillEl.style.width  = ((index + 1) / total * 100) + '%';
+
+      // Build card HTML
+      let inputHTML = '';
+      if (q.type === 'radio') {
+        inputHTML = `<div class="options">` +
+          q.options.map(opt => `
+            <label class="option-label">
+              <input type="radio" name="qRadio" value="${opt.letter}"
+                ${answers[index] === opt.letter ? 'checked' : ''} />
+              <span class="option-letter">${opt.letter}.</span>
+              <span>${opt.text}</span>
+            </label>`).join('') +
+          `</div>`;
+      } else {
+        inputHTML = `<textarea class="q-input"
+          placeholder="${q.placeholder}"
+          rows="4">${answers[index]}</textarea>`;
+      }
+
+      const slide = document.createElement('div');
+      slide.classList.add('q-slide');
+      slide.innerHTML = `
+        <div class="q-card">
+          <div class="q-label">
+            <span class="q-emoji">${q.emoji}</span>
+            ${q.label}
+          </div>
+          <div class="q-text">${q.text}</div>
+          ${inputHTML}
+        </div>`;
+
+      // Animate out old, in new
+      const existing = area.querySelector('.q-slide');
+      if (existing) {
+        existing.classList.add('leaving');
+        setTimeout(() => {
+          area.innerHTML = '';
+          area.appendChild(slide);
+          slide.classList.add('entering');
+        }, 340);
+      } else {
+        area.appendChild(slide);
+        slide.classList.add('entering');
+      }
+
+      // Nav buttons
+      const isLast = index === total - 1;
+      navRow.innerHTML = `
+        <button class="nav-btn back" onclick="prevQuestion()" ${index === 0 ? 'disabled' : ''}>
+          ← Back
+        </button>
+        ${isLast
+          ? `<button class="nav-btn submit" onclick="submitAnswers()">Send My Answers 💌</button>`
+          : `<button class="nav-btn next" onclick="nextQuestion()">Next →</button>`
+        }`;
+    }
+
+    // ── Save current answer ──────────────────────────────────────────
+    function saveAnswer() {
+      const q    = questions[currentQ];
+      const area = document.getElementById('questionArea');
+      if (q.type === 'radio') {
+        const checked = area.querySelector('input[type="radio"]:checked');
+        answers[currentQ] = checked ? checked.value : '';
+      } else {
+        const ta = area.querySelector('textarea');
+        answers[currentQ] = ta ? ta.value : '';
+      }
+    }
+
+    // ── Navigation ───────────────────────────────────────────────────
+    function nextQuestion() {
+      saveAnswer();
+      if (currentQ < questions.length - 1) {
+        currentQ++;
+        renderQuestion(currentQ, 'next');
+      }
+    }
+
+    function prevQuestion() {
+      saveAnswer();
+      if (currentQ > 0) {
+        currentQ--;
+        renderQuestion(currentQ, 'back');
+      }
+    }
+
+    function goToPage2() {
+      document.getElementById('page1').classList.remove('active');
+      document.getElementById('page2').classList.add('active');
+      currentQ = 0;
+      renderQuestion(0, 'next');
+    }
+
+    function submitAnswers() {
+      saveAnswer();
+
+      // Find first unanswered question
+      const unanswered = answers.findIndex(a => !a || a.trim() === '');
+
+      if (unanswered !== -1) {
+        // Jump to that question and shake the card
+        currentQ = unanswered;
+        renderQuestion(currentQ, 'next');
+
+        // Wait for render then show shake + error hint
+        setTimeout(() => {
+          const card = document.querySelector('.q-card');
+          if (card) {
+            card.classList.add('shake');
+            card.style.border = '1px solid rgba(255, 100, 120, 0.7)';
+            card.style.boxShadow = '0 0 16px rgba(255, 100, 120, 0.25)';
+            setTimeout(() => {
+              card.classList.remove('shake');
+            }, 600);
+          }
+
+          // Show inline error message
+          const existing = document.getElementById('answerError');
+          if (!existing) {
+            const err = document.createElement('div');
+            err.id = 'answerError';
+            err.textContent = '💬 Please answer this question before submitting.';
+            err.style.cssText = `
+              margin-top: 14px;
+              font-size: 0.88rem;
+              color: #ff8fa3;
+              font-style: italic;
+              text-align: center;
+              animation: fadeIn 0.4s ease;
+            `;
+            document.getElementById('navRow').before(err);
+            setTimeout(() => err.remove(), 3000);
+          }
+        }, 400);
+        return;
+      }
+
+      // All answered — save to GitHub then go to thank you page
+      const submitBtn = document.querySelector('.nav-btn.submit');
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Saving... 💌';
+      }
+
+      // Build a readable JSON payload
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+      const payload = {
+        submitted_at: new Date().toISOString(),
+        responses: questions.map((q, i) => {
+          let answer = answers[i];
+          if (q.type === 'radio') {
+            const opt = q.options.find(o => o.letter === answer);
+            answer = opt ? `${opt.letter}. ${opt.text}` : answer;
+          }
+          return { question: q.text, answer };
+        })
+      };
+
+      const fileContent = btoa(unescape(encodeURIComponent(
+        JSON.stringify(payload, null, 2)
+      )));
+      const filePath = `answers/${timestamp}.json`;
+      const apiUrl   = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${filePath}`;
+
+      fetch(apiUrl, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${GITHUB_TOKEN}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/vnd.github+json'
+        },
+        body: JSON.stringify({
+          message: `💌 New answers submitted — ${timestamp}`,
+          content: fileContent,
+          branch: GITHUB_BRANCH
+        })
+      })
+      .then(res => {
+        if (!res.ok) return res.json().then(e => { throw new Error(e.message); });
+        return res.json();
+      })
+      .then(() => {
+        document.getElementById('page2').classList.remove('active');
+        document.getElementById('page3').classList.add('active');
+      })
+      .catch(err => {
+        console.error('GitHub save error:', err);
+        // Still show thank you — don't leave her stuck on an error
+        document.getElementById('page2').classList.remove('active');
+        document.getElementById('page3').classList.add('active');
+      });
+    }
+  </script>
+</body>
+</html>
