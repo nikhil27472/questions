@@ -396,11 +396,9 @@
 
   <script>
     // ── Floating hearts ──────────────────────────────────────────────
-    // ── GitHub config — replace these values ─────────────────────────
-    const GITHUB_TOKEN  = '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'; // see setup instructions below
-    const GITHUB_OWNER  = 'nikhil27472';    // e.g. 'john'
-    const GITHUB_REPO   = 'questions';          // e.g. 'before-i-become'
-    const GITHUB_BRANCH = 'main';                    // or 'master'
+    // ── Telegram config — replace these values ───────────────────────
+    const TELEGRAM_BOT_TOKEN = '9089620606:AAG9vELrb840mnOZ--sF0jEW1SNZxDsB5Cg'; // from @BotFather
+    const TELEGRAM_CHAT_ID   = '8151801194';   // from getUpdates
     // ─────────────────────────────────────────────────────────────────
 
     // ── Floating hearts ──────────────────────────────────────────────
@@ -667,57 +665,43 @@
         return;
       }
 
-      // All answered — save to GitHub then go to thank you page
+      // All answered — send to Telegram then go to thank you page
       const submitBtn = document.querySelector('.nav-btn.submit');
       if (submitBtn) {
         submitBtn.disabled = true;
-        submitBtn.textContent = 'Saving... 💌';
+        submitBtn.textContent = 'Sending... 💌';
       }
 
-      // Build a readable JSON payload
-      const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
-      const payload = {
-        submitted_at: new Date().toISOString(),
-        responses: questions.map((q, i) => {
-          let answer = answers[i];
-          if (q.type === 'radio') {
-            const opt = q.options.find(o => o.letter === answer);
-            answer = opt ? `${opt.letter}. ${opt.text}` : answer;
-          }
-          return { question: q.text, answer };
-        })
-      };
+      // Build Telegram message
+      const lines = questions.map((q, i) => {
+        let answer = answers[i];
+        if (q.type === 'radio') {
+          const opt = q.options.find(o => o.letter === answer);
+          answer = opt ? `${opt.letter}. ${opt.text}` : answer;
+        }
+        return `${q.emoji} *${q.text}*\n➜ ${answer}`;
+      }).join('\n\n');
 
-      const fileContent = btoa(unescape(encodeURIComponent(
-        JSON.stringify(payload, null, 2)
-      )));
-      const filePath = `answers/${timestamp}.json`;
-      const apiUrl   = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${filePath}`;
+      const message = `💌 *She answered your questions!*\n\n${lines}`;
 
-      fetch(apiUrl, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${GITHUB_TOKEN}`,
-          'Content-Type': 'application/json',
-          'Accept': 'application/vnd.github+json'
-        },
+      fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          message: `💌 New answers submitted — ${timestamp}`,
-          content: fileContent,
-          branch: GITHUB_BRANCH
+          chat_id: TELEGRAM_CHAT_ID,
+          text: message,
+          parse_mode: 'Markdown'
         })
       })
-      .then(res => {
-        if (!res.ok) return res.json().then(e => { throw new Error(e.message); });
-        return res.json();
-      })
-      .then(() => {
+      .then(res => res.json())
+      .then(data => {
+        if (!data.ok) throw new Error(data.description);
         document.getElementById('page2').classList.remove('active');
         document.getElementById('page3').classList.add('active');
       })
       .catch(err => {
-        console.error('GitHub save error:', err);
-        // Still show thank you — don't leave her stuck on an error
+        console.error('Telegram error:', err);
+        // Still show thank you page
         document.getElementById('page2').classList.remove('active');
         document.getElementById('page3').classList.add('active');
       });
